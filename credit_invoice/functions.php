@@ -16,8 +16,9 @@ function credit_invoice_credit() {
 	$credit->adminNotes = "Refund Invoice|{$invoiceId}|DO-NOT-REMOVE";
 	$credit->dateCreated = Carbon\Carbon::now();
 	$credit->dateDue = Carbon\Carbon::now();
-	$credit->datePaid = Carbon\Carbon::now();
-	$credit->status = 'Paid';
+	//$credit->datePaid = Carbon\Carbon::now();
+	//$credit->status = 'Paid';
+	$credit->status = 'Unpaid';
 	$credit->save();
 
 	// Copy old invoice items to credit note
@@ -36,13 +37,14 @@ function credit_invoice_credit() {
 	$newItems[] = [
 		'invoiceid' => $credit->id,
 		'userid' => $credit->userid,
-		'description' => "Kreditfaktura avser faktura #{$invoiceId}",
+		'description' => "Creditnota voor factuur #{$invoiceId}",
 		'amount' => 0,
 	];
 	Capsule::table('tblinvoiceitems')->insert($newItems);
 
 	// Mark original invoice as paid and add reference to credit note.
-	$invoice->status = 'Paid';
+	//$invoice->status = 'Paid';
+	$invoice->status = 'Unpaid';
 	$invoice->adminNotes = $invoice->adminNotes . PHP_EOL . "Refund Credit Note|{$credit->id}|DO-NOT-REMOVE";
 	$invoice->save();
 
