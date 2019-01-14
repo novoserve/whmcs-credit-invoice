@@ -2,6 +2,7 @@
 
 use \WHMCS\Billing\Invoice;
 use \WHMCS\Billing\Invoice\Item;
+use \WHMCS\Database\Capsule;
 
 defined('WHMCS') || exit;
 
@@ -63,10 +64,21 @@ add_hook('UpdateInvoiceTotal', 1, function($vars) {
 
 	foreach ($invoice->items as $item) {
 		if ($item->taxed && $item->amount < 0) {
-			$invoice->tax1 = $item->amount * ($invoice->taxRate1 / 100);
+			$invoice->tax1 = $invoice->subtotal * ($invoice->taxRate1 / 100);
 		}
 	}
 
 	$invoice->total = $invoice->subtotal - $invoice->credit + $invoice->tax1 + $invoice->tax2;
 	$invoice->save();
+});
+
+add_hook('InvoicePaid', 1, function($vars) {
+
+    $invoice = Invoice::with('items')->findOrFail($vars['invoiceid']);
+    if ($invoice->items[0]->type == 'AddFunds') {
+    	$getSeq = Capsule::table('tblconfiguration')->where('setting', 'SequentialInvoiceNumberValue')->value('value');
+    	Capsule::table('tblconfiguration')->where('setting', 'SequentialInvoiceNumberValue')->update(['value' => $getSeq-1]);
+    	Capsule::table('tblinvoices')->where('id', $vars['invoiceid'])->update(['invoicenum' => ''])->update(['status' => 'Credit']);
+    }
+
 });

@@ -2,7 +2,7 @@
 
 use \WHMCS\Billing\Invoice;
 use \WHMCS\Billing\Invoice\Item;
-use WHMCS\Database\Capsule;
+use \WHMCS\Database\Capsule;
 
 function credit_invoice_issuecredit() {
 	$invoiceId = filter_input(INPUT_POST, 'invoice', FILTER_SANITIZE_NUMBER_INT);
@@ -39,7 +39,7 @@ function credit_invoice_credit() {
 	$credit->adminNotes = "Refund Invoice|{$invoiceId}|DO-NOT-REMOVE";
 	$credit->dateCreated = Carbon\Carbon::now();
 	$credit->dateDue = Carbon\Carbon::now();
-	$credit->invoiceNumber = "W".date('Y').$getSeq;
+	$credit->invoiceNumber = date('Y').date('m').$getSeq;
 	//$credit->datePaid = Carbon\Carbon::now();
 	//$credit->status = 'Paid';
 	$credit->status = 'Unpaid';
@@ -76,7 +76,7 @@ function credit_invoice_credit() {
 	$invoice->save();
 
 	// Increase the sequentialnumbering.
-	Capsule::table('tblconfiguration')->where('setting', 'SequentialInvoiceNumberValue')->update(['value' => $getSeqNew+1]);
+	Capsule::table('tblconfiguration')->where('setting', 'SequentialInvoiceNumberValue')->update(['value' => $getSeq+1]);
 
 	// Finally redirect to our credit note.
 	redirect_to_invoice($credit->id);
