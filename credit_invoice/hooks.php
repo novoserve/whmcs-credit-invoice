@@ -18,6 +18,8 @@ add_hook('AdminInvoicesControlsOutput', 1, function($vars) {
 
 		<a href="invoices.php?action=edit&id=<?= $originalId ?>" class="button btn btn-default">Credit invoice of <?= $originalId ?></a>
 
+		<br><br>
+
 		<form method="POST" action="addonmodules.php?module=credit_invoice" name="credit_invoice_actions" style="display:inline;margin-top: 5px;" onsubmit="return confirm('Do you really want to issue a credit?');">
 			<input type="hidden" name="invoice" value="<?= $vars['invoiceid'] ?>">
 			<button type="submit" name="action" value="issuecredit"
