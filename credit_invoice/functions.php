@@ -34,7 +34,7 @@ function credit_invoice_credit() {
 	// Duplicate original invoice (this is the credit note).
 	$credit = $invoice->replicate();
 	$credit->subtotal = -$credit->subtotal;
-	$credit->tax = -$credit->tax;
+	$credit->tax1 = -$credit->tax1;
 	$credit->total = -$credit->total;
 	$credit->adminNotes = "Refund Invoice|{$invoiceId}|DO-NOT-REMOVE";
 	$credit->dateCreated = Carbon\Carbon::now();
@@ -49,11 +49,13 @@ function credit_invoice_credit() {
 	$oldItems = Capsule::table('tblinvoiceitems')->where('invoiceid', '=', $invoice->id)->get();
 	$newItems = [];
 	foreach ($oldItems as $item) {
+		//var_dump($item); die();
 		$newItems[] = [
 			'invoiceid' => $credit->id,
 			'userid' => $credit->userid,
 			'description' => $item->description,
 			'amount' => -$item->amount,
+			'taxed' => $item->taxed
 		];
 	}
 
@@ -63,6 +65,7 @@ function credit_invoice_credit() {
 		'userid' => $credit->userid,
 		'description' => "Credit invoice for invoice #{$invoiceId}",
 		'amount' => 0,
+		'taxed' => false
 	];
 	Capsule::table('tblinvoiceitems')->insert($newItems);
 
