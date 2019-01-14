@@ -79,6 +79,7 @@ add_hook('InvoicePaid', 1, function($vars) {
     	$getSeq = Capsule::table('tblconfiguration')->where('setting', 'SequentialInvoiceNumberValue')->value('value');
     	Capsule::table('tblconfiguration')->where('setting', 'SequentialInvoiceNumberValue')->update(['value' => $getSeq-1]);
     	Capsule::table('tblinvoices')->where('id', $vars['invoiceid'])->update(['invoicenum' => ''])->update(['status' => 'Credit']);
+    	Capsule::table('tblinvoices')->where('id', $vars['invoiceid'])->update(['status' => 'Credit']);
     }
 
 });
