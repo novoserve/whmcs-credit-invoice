@@ -26,20 +26,10 @@ function credit_invoice_issuecredit() {
 	}
 }
 
-function credit_invoice_markpaid() {
-	$invoiceId = filter_input(INPUT_POST, 'invoice', FILTER_SANITIZE_NUMBER_INT);
-	$invoice = Invoice::with('items')->findOrFail($invoiceId);
-	$invoicet->datePaid = Carbon\Carbon::now();
-	$invoice->status = 'Paid';
-	$invoice->save();
-	redirect_message_ok($invoiceId);
-}
-
 function credit_invoice_credit() {
 	$invoiceId = filter_input(INPUT_POST, 'invoice', FILTER_SANITIZE_NUMBER_INT);
 	$invoice = Invoice::with('items')->findOrFail($invoiceId);
-	//$getSeq = Capsule::table('tblconfiguration')->where('setting', 'SequentialInvoiceNumberValue')->value('value');
-	$getNum = Capsule::table('tbladdonmodules')->where('setting', 'custominvoicenumber')->value('value');
+	$getSeq = Capsule::table('tblconfiguration')->where('setting', 'SequentialInvoiceNumberValue')->value('value');
 
 	// Duplicate original invoice (this is the credit note).
 	$credit = $invoice->replicate();
@@ -49,13 +39,11 @@ function credit_invoice_credit() {
 	$credit->adminNotes = "Refund Invoice|{$invoiceId}|DO-NOT-REMOVE";
 	$credit->dateCreated = Carbon\Carbon::now();
 	$credit->dateDue = Carbon\Carbon::now();
-	$credit->invoiceNumber = date('Y').$getNum;
+	$credit->invoiceNumber = date('Y').date('m').$getSeq;
 	//$credit->datePaid = Carbon\Carbon::now();
 	//$credit->status = 'Paid';
 	$credit->status = 'Unpaid';
 	$credit->save();
-
-	//Capsule::table('tblinvoices')->where('id', $credit->id)->update(['invoicenum' => date('Y').$credit->id]);
 
 	// Copy old invoice items to credit note
 	$oldItems = Capsule::table('tblinvoiceitems')->where('invoiceid', '=', $invoice->id)->get();
@@ -87,26 +75,16 @@ function credit_invoice_credit() {
 	$invoice->adminNotes = $invoice->adminNotes . PHP_EOL . "Refund Credit Note|{$credit->id}|DO-NOT-REMOVE";
 	$invoice->save();
 
-	Capsule::table('tbladdonmodules')->where('setting', 'custominvoicenumber')->update(['value' => $getNum+1]);
+	// Increase the sequentialnumbering.
+	Capsule::table('tblconfiguration')->where('setting', 'SequentialInvoiceNumberValue')->update(['value' => $getSeq+1]);
 
 	// Finally redirect to our credit note.
 	redirect_to_invoice($credit->id);
 };
 
-/*
 function invoice_is_proforma($invoiceId) {
 	$invoice = Invoice::findOrFail($invoiceId);
 	if (empty($invoice->invoiceNumber)) {
-		return true;
-	} else {
-		return false;
-	}
-}
-*/
-
-function invoice_is_paid($invoiceId) {
-	$invoice = Invoice::findOrFail($invoiceId);
-	if ($invoice->status == 'Paid') {
 		return true;
 	} else {
 		return false;

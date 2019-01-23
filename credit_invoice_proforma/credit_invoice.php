@@ -20,9 +20,9 @@ require_once __DIR__ . '/functions.php';
 
 function credit_invoice_config() {
 	return [
-		'name' => 'Credit Invoices',
+		'name' => 'Credit invoices',
 		'description' => 'A simple module that allows admins to credit / refund invoices.',
-		'author' => 'Tamer (Original by Onlineforce Sweden AB)',
+		'author' => 'Onlineforce Sweden AB',
 		'language' => 'english',
 		'version' => '1.2',
 	];

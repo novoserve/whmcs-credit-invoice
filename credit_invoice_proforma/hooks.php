@@ -21,23 +21,18 @@ add_hook('AdminInvoicesControlsOutput', 1, function($vars) {
 
 		<br><br>
 
-		<form method="POST" action="addonmodules.php?module=credit_invoice" name="credit_invoice_actions" style="display:inline;margin-top: 5px;" onsubmit="return confirm('Do you want to mark this invoice as Paid without adding credits?');">
-			<input type="hidden" name="invoice" value="<?= $vars['invoiceid'] ?>">
-			<button type="submit" name="action" value="markpaid"
-			class="button btn btn-warning"
-			data-toggle="tooltip"
-			data-placement="left"
-			data-original-title="Mark this credit invoice as Paid..">Mark as Paid</button>
-		</form>
-
 		<form method="POST" action="addonmodules.php?module=credit_invoice" name="credit_invoice_actions" style="display:inline;margin-top: 5px;" onsubmit="return confirm('Do you really want to issue a credit?');">
 			<input type="hidden" name="invoice" value="<?= $vars['invoiceid'] ?>">
 			<button type="submit" name="action" value="issuecredit"
 			class="button btn btn-warning"
 			data-toggle="tooltip"
 			data-placement="left"
-			data-original-title="Mark this credit invoice as Paid add credits to account of the customer.">Mark as Paid + Add Credit</button>
+			data-original-title="Mark this credit invoice as Paid and add the credit to the customers account.">Add credit and mark as Paid</button>
 		</form>
+
+	<?php elseif (invoice_is_proforma($vars['invoiceid'])): ?>
+
+		<a href="#" class="button btn btn-default" disabled>Credit invoice</a>
 
 	<?php else: ?>
 
@@ -47,7 +42,7 @@ add_hook('AdminInvoicesControlsOutput', 1, function($vars) {
 			class="button btn btn-default"
 			data-toggle="tooltip"
 			data-placement="left"
-			data-original-title="Click to copy invoice to a credit note, with reversed line items.">Credit Invoice</button>
+			data-original-title="Click to copy invoice to a credit note, with reversed line items.">Credit invoice</button>
 		</form>
 
 	<?php endif ?>
@@ -55,7 +50,7 @@ add_hook('AdminInvoicesControlsOutput', 1, function($vars) {
 	<?php if (isset($_GET['credit']) && $_GET['credit'] == 'ok'): ?>
 		<br><br>
 		<div class="alert alert-success col-md-4 col-md-offset-4" align="center">
-		  <strong>Success!</strong> Requested action executed successfully!
+		  <strong>Success!</strong> Invoice credited to account.
 		</div>
 	<?php endif ?>
 
@@ -77,7 +72,6 @@ add_hook('UpdateInvoiceTotal', 1, function($vars) {
 	$invoice->save();
 });
 
-/*
 add_hook('InvoicePaid', 1, function($vars) {
 
     $invoice = Invoice::with('items')->findOrFail($vars['invoiceid']);
@@ -89,4 +83,3 @@ add_hook('InvoicePaid', 1, function($vars) {
     }
 
 });
-*/
