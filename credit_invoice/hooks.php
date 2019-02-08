@@ -13,30 +13,23 @@ add_hook('AdminInvoicesControlsOutput', 1, function($vars) {
 
 	<?php if ($creditId = invoice_is_credited($vars['invoiceid'])[1]): ?>
 
-		<a href="invoices.php?action=edit&id=<?= $creditId ?>" class="button btn btn-default">Credited in <?= $creditId ?></a>
+		<a href="invoices.php?action=edit&id=<?php echo invoiceNumToInvoiceId($creditId); ?>" class="button btn btn-default">Open creditnote #<?= $creditId ?></a>
 
 	<?php elseif ($originalId = invoice_is_creditnote($vars['invoiceid'])[1]): ?>
 
-		<a href="invoices.php?action=edit&id=<?= $originalId ?>" class="button btn btn-default">Credit invoice of <?= $originalId ?></a>
+		<a href="invoices.php?action=edit&id=<?php echo invoiceNumToInvoiceId($originalId); ?>" class="button btn btn-default">Open original #<?= $originalId ?></a>
 
 		<br><br>
 
-		<form method="POST" action="addonmodules.php?module=credit_invoice" name="credit_invoice_actions" style="display:inline;margin-top: 5px;" onsubmit="return confirm('Do you want to mark this invoice as Paid without adding credits?');">
+		<form method="POST" action="addonmodules.php?module=credit_invoice" name="credit_invoice_actions" style="display:inline;margin-top: 5px;" onsubmit="return confirm('Do you want to mark this invoice as Paid?');">
 			<input type="hidden" name="invoice" value="<?= $vars['invoiceid'] ?>">
+			<input type="hidden" name="originalId" value="<?php echo invoiceNumToInvoiceId($originalId); ?>">
+			<input type="hidden" name="originalIdNum" value="<?php echo $originalId; ?>">
 			<button type="submit" name="action" value="markpaid"
 			class="button btn btn-warning"
 			data-toggle="tooltip"
 			data-placement="left"
 			data-original-title="Mark this credit invoice as Paid..">Mark as Paid</button>
-		</form>
-
-		<form method="POST" action="addonmodules.php?module=credit_invoice" name="credit_invoice_actions" style="display:inline;margin-top: 5px;" onsubmit="return confirm('Do you really want to issue a credit?');">
-			<input type="hidden" name="invoice" value="<?= $vars['invoiceid'] ?>">
-			<button type="submit" name="action" value="issuecredit"
-			class="button btn btn-warning"
-			data-toggle="tooltip"
-			data-placement="left"
-			data-original-title="Mark this credit invoice as Paid add credits to account of the customer.">Mark as Paid + Add Credit</button>
 		</form>
 
 	<?php else: ?>
