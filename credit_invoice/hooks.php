@@ -29,7 +29,7 @@ add_hook('AdminInvoicesControlsOutput', 1, function($vars) {
 			class="button btn btn-warning"
 			data-toggle="tooltip"
 			data-placement="left"
-			data-original-title="Mark this credit invoice as Paid..">Mark as Paid</button>
+			data-original-title="Mark this credit invoice as Paid.">Mark as Paid and Credit</button>
 		</form>
 
 	<?php else: ?>
