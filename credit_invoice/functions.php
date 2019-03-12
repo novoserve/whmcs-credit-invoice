@@ -43,7 +43,7 @@ function credit_invoice_markpaid() {
 
 	$invoice = Invoice::with('items')->findOrFail($invoiceId);
 
-	$addTransaction = localAPI('AddInvoicePayment', array('invoiceid' => $originalId, 'transid' => $originalIdNum, 'gateway' => 'creditnote', 'amount' => abs($invoice->total)), 'Tamer');
+	$addTransaction = localAPI('AddInvoicePayment', array('invoiceid' => $originalId, 'transid' => $originalIdNum, 'gateway' => 'creditnote', 'amount' => abs($invoice->total)), 'API');
 	if ($addTransaction['result'] != 'success') {
 		echo $originalId;
 	    die("Something went wrong: " . $addTransaction['result']);
@@ -64,6 +64,10 @@ function credit_invoice_credit() {
 	$getNum = Capsule::table('tbladdonmodules')->where('setting', 'custominvoicenumber')->value('value');
 	$getNewInvoiceNum = date('Y').$getNum;
 
+	if (!is_numeric($getNum)) {
+		die('Invoicenumber is not numeric!');
+	}
+
 	// Duplicate original invoice (this is the credit note).
 	$credit = $invoice->replicate();
 	$credit->subtotal = -$credit->subtotal;
@@ -77,16 +81,19 @@ function credit_invoice_credit() {
 	$credit->status = 'Unpaid';
 	$credit->save();
 
+	Capsule::table('tbladdonmodules')->where('setting', 'custominvoicenumber')->update(['value' => $getNum+1]);
+
 	//Capsule::table('tblinvoices')->where('id', $credit->id)->update(['invoicenum' => date('Y').$credit->id]);
 
 	// Copy old invoice items to credit note
 	$oldItems = Capsule::table('tblinvoiceitems')->where('invoiceid', '=', $invoice->id)->get();
 	$newItems = [];
 	foreach ($oldItems as $item) {
-		//var_dump($item); die();
 		$newItems[] = [
 			'invoiceid' => $credit->id,
 			'userid' => $credit->userid,
+			'type' => $item->type,
+			'relid' => $item->relid,
 			'description' => $item->description,
 			'amount' => -$item->amount,
 			'taxed' => $item->taxed
@@ -97,6 +104,8 @@ function credit_invoice_credit() {
 	$newItems[] = [
 		'invoiceid' => $credit->id,
 		'userid' => $credit->userid,
+		'type' => '',
+		'relid' => '0',
 		'description' => "Creditnote for invoice #{$invoiceIdToNum}", //refer in creditnote to original innvoice
 		'amount' => 0,
 		'taxed' => false
@@ -108,7 +117,7 @@ function credit_invoice_credit() {
 	$invoice->adminNotes = $invoice->adminNotes . PHP_EOL . "CREDITAPPLIED|{$getNewInvoiceNum}|";
 	$invoice->save();
 
-	Capsule::table('tbladdonmodules')->where('setting', 'custominvoicenumber')->update(['value' => $getNum+1]);
+	
 
 	// Finally redirect to our credit note.
 	redirect_to_invoice($credit->id);
