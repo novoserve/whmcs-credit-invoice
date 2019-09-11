@@ -60,8 +60,8 @@ function credit_invoice_credit() {
 	$invoiceId = filter_input(INPUT_POST, 'invoice', FILTER_SANITIZE_NUMBER_INT);
 	$invoiceIdToNum = IdtoInvoiceNum($invoiceId);
 	$invoice = Invoice::with('items')->findOrFail($invoiceId);
-	//$getSeq = Capsule::table('tblconfiguration')->where('setting', 'SequentialInvoiceNumberValue')->value('value');
-	$getNum = Capsule::table('tbladdonmodules')->where('setting', 'custominvoicenumber')->value('value');
+	$getNum = Capsule::table('tblconfiguration')->where('setting', 'TaxNextCustomInvoiceNumber')->value('value');
+	//$getNum = Capsule::table('tbladdonmodules')->where('setting', 'custominvoicenumber')->value('value'); prior whmcs 7.8
 	$getNewInvoiceNum = date('Y').$getNum;
 
 	if (!is_numeric($getNum)) {
@@ -81,7 +81,8 @@ function credit_invoice_credit() {
 	$credit->status = 'Unpaid';
 	$credit->save();
 
-	Capsule::table('tbladdonmodules')->where('setting', 'custominvoicenumber')->update(['value' => $getNum+1]);
+	Capsule::table('tblconfiguration')->where('setting', 'TaxNextCustomInvoiceNumber')->update(['value' => $getNum+1]);
+	//Capsule::table('tbladdonmodules')->where('setting', 'custominvoicenumber')->update(['value' => $getNum+1]); prior whmcs 7.8
 
 	//Capsule::table('tblinvoices')->where('id', $credit->id)->update(['invoicenum' => date('Y').$credit->id]);
 
